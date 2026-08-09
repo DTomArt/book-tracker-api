@@ -1,3 +1,4 @@
+## GET TOKEN
 POST http://localhost:3000/auth/login
 Content-Type: application/json
 
@@ -6,9 +7,7 @@ Content-Type: application/json
     "password": "secretpass"
 }
 
-###
-
-# CHECK TOKEN
+### CHECK TOKEN
 GET http://localhost:3000/auth/me
 Content-Type: application/json
 Authorization: Bearer <access_token>
