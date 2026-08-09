@@ -1,0 +1,25 @@
+services:
+  api:
+    build: .
+    env_file:
+      - .env
+    environment:
+      PG_HOST: postgres
+    depends_on:
+      - postgres
+    ports:
+      - '${PORT}:3000'
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DB}
+    ports:
+      - '${PG_PORT}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
