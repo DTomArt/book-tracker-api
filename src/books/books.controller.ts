@@ -12,6 +12,7 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { CreateBookDto } from './entities/dto/create-book.dto';
 import { BooksService } from './books.service';
@@ -21,10 +22,16 @@ import {
 } from '../auth/guards/auth.guard';
 import { UpdateBookDto } from './entities/dto/update-book.dto';
 import { GetBooksDto } from './entities/dto/get-books.dto';
+import { CreateCommentDto } from '../comments/entities/dto/create-comment.dto';
 
 @Controller('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
+
+  @Get(':bookId')
+  getBook(@Param('bookId', new ParseUUIDPipe()) bookId: string) {
+    return this.booksService.getBook(bookId);
+  }
 
   @Get()
   getBooks(@Query() getBooksDto: GetBooksDto) {
@@ -37,21 +44,35 @@ export class BooksController {
     @Request() request: AuthenticatedRequest,
     @Body() createBookDto: CreateBookDto,
   ) {
-    return this.booksService.createBook(createBookDto, request.userId);
+    return this.booksService.createBook(request.userId, createBookDto);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post(':bookId/comments')
+  addComment(
+    @Param('bookId', new ParseUUIDPipe()) bookId: string,
+    @Request() request: AuthenticatedRequest,
+    @Body() createCommentDto: CreateCommentDto,
+  ) {
+    return this.booksService.addComment(
+      bookId,
+      request.userId,
+      createCommentDto,
+    );
   }
 
   @UseGuards(AuthGuard)
   @Patch(':bookId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateBook(
-    @Param('bookId') bookId: string,
+    @Param('bookId', new ParseUUIDPipe()) bookId: string,
     @Request() request: AuthenticatedRequest,
     @Body() updateBookDto: UpdateBookDto,
   ) {
     const patched = await this.booksService.updateBook(
-      updateBookDto,
       bookId,
       request.userId,
+      updateBookDto,
     );
 
     if (!patched) {
@@ -63,7 +84,7 @@ export class BooksController {
   @Delete(':bookId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBook(
-    @Param('bookId') bookId: string,
+    @Param('bookId', new ParseUUIDPipe()) bookId: string,
     @Request() request: AuthenticatedRequest,
   ) {
     const removed = await this.booksService.deleteBook(bookId, request.userId);

@@ -32,19 +32,20 @@ npm run stop:docker
 
 This option runs the database in Docker and the API locally in development mode.
 
-1. Start PostgreSQL in Docker:
+1. Start DB with migrations and seeds:
+
+```bash
+npm run start:db
+```
+
+Alternative (two-step setup):
 
 ```bash
 npm run db:run
-```
-
-2. Run migrations and seeds:
-
-```bash
 npm run db:setup
 ```
 
-3. Start the API locally:
+2. Start the API locally:
 
 ```bash
 npm run start:dev

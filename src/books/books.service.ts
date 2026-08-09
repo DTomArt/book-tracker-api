@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateBookDto } from './entities/dto/create-book.dto';
 import { Book } from './entities/book.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,8 +11,12 @@ import { UpdateBookDto } from './entities/dto/update-book.dto';
 import { GetBooksDto } from './entities/dto/get-books.dto';
 import { CommentsService } from '../comments/comments.service';
 import { Comment as BookComment } from '../comments/entities/comment.entity';
+import { UsersService } from '../users/users.service';
+import { CreateCommentDto } from '../comments/entities/dto/create-comment.dto';
 
-type BooksWithComments = Array<Book & { comments: BookComment[] }>;
+type BookWithComments = Book & { comments: BookComment[] };
+
+type BooksWithComments = Array<BookWithComments>;
 
 type PaginationResult = {
   data: BooksWithComments;
@@ -22,7 +30,23 @@ export class BooksService {
     @InjectRepository(Book)
     private readonly bookRepository: Repository<Book>,
     private readonly commentsService: CommentsService,
+    private readonly usersService: UsersService,
   ) {}
+
+  public async getBook(id: string): Promise<BookWithComments | null> {
+    const book = await this.bookRepository.findOne({ where: { id } });
+
+    if (!book) {
+      return null;
+    }
+
+    const commentsByBookId =
+      await this.commentsService.getLatestCommentsPerBook([book.id], 10);
+
+    const comments = commentsByBookId[book.id] ?? [];
+
+    return { ...book, comments };
+  }
 
   public async getBooks(getBooksDto: GetBooksDto): Promise<PaginationResult> {
     const { limit, cursor } = getBooksDto;
@@ -78,8 +102,8 @@ export class BooksService {
   }
 
   public async createBook(
-    createBookDto: CreateBookDto,
     userId: string,
+    createBookDto: CreateBookDto,
   ): Promise<Book> {
     const isbn = this.normalizeAndValidateISBN(createBookDto.isbn);
 
@@ -94,9 +118,9 @@ export class BooksService {
   }
 
   public async updateBook(
-    updateBookDto: UpdateBookDto,
     bookId: string,
     userId: string,
+    updateBookDto: UpdateBookDto,
   ): Promise<boolean> {
     const { ...payload } = updateBookDto;
 
@@ -111,10 +135,35 @@ export class BooksService {
     return !!res?.affected;
   }
 
-  public async deleteBook(id: string, userId: string): Promise<boolean> {
-    const res = await this.bookRepository.delete({ id, userId });
+  public async deleteBook(bookId: string, userId: string): Promise<boolean> {
+    const res = await this.bookRepository.delete({ id: bookId, userId });
 
     return !!res?.affected;
+  }
+
+  public async addComment(
+    bookId: string,
+    userId: string,
+    createCommentDto: CreateCommentDto,
+  ): Promise<BookComment> {
+    const book = await this.bookRepository.findOne({ where: { id: bookId } });
+
+    if (!book) {
+      throw new NotFoundException('Book not found');
+    }
+
+    const user = await this.usersService.findUserById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return await this.commentsService.createComment({
+      content: createCommentDto.content,
+      author: user.username,
+      bookId,
+      userId,
+    });
   }
 
   private normalizeAndValidateISBN(isbn: string): string {

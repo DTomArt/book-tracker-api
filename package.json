@@ -26,6 +26,7 @@
     "db:kill": " docker compose down -v",
     "db:setup": "npm run migration:run && npm run seed:user && npm run seed:demo",
     "db:reset": "npm run db:kill && npm run db:run && npm run db:setup",
+    "start:db": "docker compose up -d postgres && docker compose exec api npm run db:setup",
     "start:docker": "docker compose up -d && docker compose exec api npm run db:setup",
     "stop:docker": "docker compose down",
     "test": "jest",

@@ -67,4 +67,15 @@ export class CommentsService {
 
     return grouped;
   }
+
+  public async createComment(input: {
+    content: string;
+    author: string;
+    bookId: string;
+    userId: string;
+  }): Promise<Comment> {
+    const comment = this.commentRepository.create(input);
+
+    return await this.commentRepository.save(comment);
+  }
 }

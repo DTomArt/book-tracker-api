@@ -1,0 +1,48 @@
+@baseUrl = http://localhost:3000
+@accessToken = <access_token>
+@bookId = <book_id>
+
+### GET FOR CHECKING
+
+GET {{baseUrl}}/books/{{bookId}}
+Content-Type: application/json
+
+### CREATE
+
+POST {{baseUrl}}/books
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "isbn": "9780132350884",
+  "numberOfPages": 464,
+  "rating": 5
+}
+
+### CREATE COMMENT
+
+POST {{baseUrl}}/books/{{bookId}}/comments
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "content": "Great book, recommended!!!"
+}
+
+###
+
+PATCH {{baseUrl}}/books/{{bookId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "title": "Clean Code (2nd read)",
+  "rating": 4
+}
+
+###
+DELETE {{baseUrl}}/books/{{bookId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}

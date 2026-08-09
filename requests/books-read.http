@@ -1,0 +1,29 @@
+@baseUrl = http://localhost:3000
+@bookId = <book_id>
+@cursorId = <book_id>
+@limit = 3
+
+### 20 BOOKS
+
+GET {{baseUrl}}/books
+Content-Type: application/json
+
+### SPECIFIC BOOK
+
+GET {{baseUrl}}/books/{{bookId}}
+Content-Type: application/json
+
+### WITH LIMIT
+
+GET {{baseUrl}}/books?limit={{limit}}
+Content-Type: application/json
+
+### NEXT PAGE
+
+GET {{baseUrl}}/books?limit=3&cursor={{cursorId}}
+Content-Type: application/json
+
+### ALL DEMO BOOKS
+
+GET {{baseUrl}}/books?limit=25
+Content-Type: application/json
