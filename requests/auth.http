@@ -8,6 +8,8 @@ Content-Type: application/json
 
 ###
 
+# CHECK TOKEN
 GET http://localhost:3000/auth/me
 Content-Type: application/json
 Authorization: Bearer <access_token>
+
